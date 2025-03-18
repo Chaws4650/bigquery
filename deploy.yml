@@ -1,34 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-bigquery-app
+  name: flask-app
   labels:
-    app: flask-bigquery
+    app: flask-app
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: flask-bigquery
+      app: flask-app
   template:
     metadata:
       labels:
-        app: flask-bigquery
+        app: flask-app
     spec:
+      serviceAccountName: flask-app-sa
       containers:
-      - name: flask-bigquery-container
-        image: <your-dockerhub-username>/flask-bigquery:latest
+      - name: flask-app
+        image: gcr.io/[PROJECT_ID]/flask-bigquery-app
         ports:
         - containerPort: 5000
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/var/secrets/google/key.json"
-        volumeMounts:
-        - name: google-credentials
-          mountPath: /var/secrets/google
-      volumes:
-      - name: google-credentials
-        secret:
-          secretName: google-credentials
+        - name: PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: flask-app-config
+              key: PROJECT_ID
+        - name: DATASET_ID
+          valueFrom:
+            configMapKeyRef:
+              name: flask-app-config
+              key: DATASET_ID
+        - name: TABLE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: flask-app-config
+              key: TABLE_ID
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flask-app-config
+data:
+  PROJECT_ID: "your-gcp-project-id"
+  DATASET_ID: "your-bigquery-dataset-id"
+  TABLE_ID: "your-bigquery-table-id"
+
 ---
 apiVersion: v1
 kind: Service
