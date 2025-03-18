@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-bigquery-app
+  labels:
+    app: flask-bigquery
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-bigquery
+  template:
+    metadata:
+      labels:
+        app: flask-bigquery
+    spec:
+      containers:
+      - name: flask-bigquery-container
+        image: <your-dockerhub-username>/flask-bigquery:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/var/secrets/google/key.json"
+        volumeMounts:
+        - name: google-credentials
+          mountPath: /var/secrets/google
+      volumes:
+      - name: google-credentials
+        secret:
+          secretName: google-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-bigquery-service
+spec:
+  selector:
+    app: flask-bigquery
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: LoadBalancer
