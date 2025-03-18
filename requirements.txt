@@ -2,3 +2,5 @@ Flask==2.1.1
 google-cloud-bigquery==3.5.0
 python-dotenv==1.0.0
 setuptools
+google-auth==2.23.2
+python-dotenv==1.0.0
